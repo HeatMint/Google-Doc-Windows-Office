@@ -112,3 +112,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#project specific
+/test_location/*
+/.idea/*
+.idea/vcs.xml
+
