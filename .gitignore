@@ -117,4 +117,5 @@ dmypy.json
 /test_location/*
 /.idea/*
 .idea/vcs.xml
-
+/src/client_id.json
+/src/tocken.pickle
