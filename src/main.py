@@ -14,28 +14,28 @@ path = '../test_location'
 path2 = path.replace('/','\\')
 print(path2)
 
+SCOPES = ['https://www.googleapis.com/auth/drive']
+creds = None
+# The file token.pickle stores the user's access and refresh tokens, and is
+# created automatically when the authorization flow completes for the first
+# time.
+if os.path.exists('token.pickle'):
+    with open('token.pickle', 'rb') as token:
+        creds = pickle.load(token)
+# If there are no (valid) credentials available, let the user log in.
+if not creds or not creds.valid:
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'client_id.json', SCOPES)
+        creds = flow.run_local_server()
+    # Save the credentials for the next run
+    with open('token.pickle', 'wb') as token:
+        pickle.dump(creds, token)
+
+
 def docs_create(title):
-    print'st'
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_id.json', SCOPES)
-            creds = flow.run_local_server()
-        # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    print 'sth'
     service = build('docs', 'v1', credentials=creds)
 
     body = {
@@ -71,7 +71,7 @@ class MyHandler(FileSystemEventHandler):
                 break
         print(path2 + new_name+'.html')
         file = open(path2 + '\\' + new_name + '.html', 'w')
-        temphtml="""<h1>Sorry, the file isn't on google yet, try to open it again later</h1>"""
+        temphtml="""<h1>Sorry, the file hasn't uploaded on google yet, try to open it again later</h1>"""
         file.write(temphtml)
         file.close()
         os.chdir(sys.path[0])
@@ -95,6 +95,8 @@ class MyHandler(FileSystemEventHandler):
             os.chdir(path2)
             os.rename(dest_file_name,src_file_name)
             print('done')
+
+        if src_end == 'html' and dest_end == 'html':
 
     def on_any_event(self, event):
         print(event.event_type, event.src_path)
