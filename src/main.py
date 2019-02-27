@@ -56,26 +56,45 @@ def abs_name(file_name):
 
 class MyHandler(FileSystemEventHandler):
     def on_created(self, event):
-        os.chdir(sys.path[0])
-        time.sleep(5)
-        print(event.event_type, event.src_path)
         file_name = event.src_path[len(path)+1:]
         pure_name = ".".join(file_name.split(".")[:-1])
-        ID = docs_create(pure_name)
         os.chdir(path2)
-        os.rename(file_name,pure_name+'.html')
-        print(path2 + pure_name+'.html')
-        file = open(path2+'\\' + pure_name+'.html', 'w')
+        new_name=pure_name
+        while 1:
+            try:
+                os.rename(file_name,new_name+'.html')
+            except WindowsError as we:
+                if we.winerror == 183:
+                    new_name += '(1)'
+                    print(new_name)
+            else:
+                break
+        print(path2 + new_name+'.html')
+        file = open(path2 + '\\' + new_name + '.html', 'w')
+        temphtml="""<h1>Sorry, the file isn't on google yet, try to open it again later</h1>"""
+        file.write(temphtml)
+        file.close()
+        os.chdir(sys.path[0])
+        ID = docs_create(new_name)
         url = '\'https://docs.google.com/document/d/' + ID + '/edit\''
         temp = '''<script language="javascript" type="text/javascript"> window.location.href=''' + url + ''';</script>'''
+        file = open(path2+'\\' + new_name+'.html', 'w')
         print(temp)
         file.write(temp)
         file.close()
 
-
     def on_moved(self, event):
         print(event.event_type, event.src_path,event.dest_path)
-        file_name = event.dest_path[len(path) + 1:]
+        src_end = event.src_path.split('.')[-1]
+        dest_end =event.dest_path.split('.')[-1]
+        src_file_name = event.src_path[len(path) + 1:]
+        dest_file_name = event.dest_path[len(path) + 1:]
+        print(dest_end,dest_file_name)
+        if src_end == 'html' and dest_end != 'html':
+            time.sleep(1)
+            os.chdir(path2)
+            os.rename(dest_file_name,src_file_name)
+            print('done')
 
     def on_any_event(self, event):
         print(event.event_type, event.src_path)
