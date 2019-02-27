@@ -119,3 +119,5 @@ dmypy.json
 .idea/vcs.xml
 /src/client_id.json
 /src/token.pickle
+/src/data.jspm
+/dist/*
