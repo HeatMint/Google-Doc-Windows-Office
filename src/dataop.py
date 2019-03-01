@@ -23,3 +23,8 @@ def add(key,value):
 def delete(key):
     del data[key]
     update()
+
+
+def search(key):
+    print "data:"+str(data)
+    return data[key]

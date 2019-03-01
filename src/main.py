@@ -8,7 +8,7 @@ import sys
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-import webbrowser
+import dataop
 
 path = '../test_location'
 path2 = path.replace('/','\\')
@@ -35,6 +35,19 @@ if not creds or not creds.valid:
         pickle.dump(creds, token)
 
 
+def docs_rename(ID, new):
+    service = build('drive', 'v2', credentials=creds)
+    file = {'title': new}
+
+    # Rename the file.
+    updated_file = service.files().patch(
+        fileId=ID,
+        body=file,
+        fields='title').execute()
+    print "done"
+    return updated_file
+
+
 def docs_create(title):
     service = build('docs', 'v1', credentials=creds)
 
@@ -43,12 +56,13 @@ def docs_create(title):
     }
     doc = service.documents().create(body=body).execute()
     docID = doc.get('documentId')
+    dataop.add(title,docID)
     return docID
-    #webbrowser.open('https://docs.google.com/document/d/'+docID+'/edit')
     # Retrieve the documents contents from the Docs service.
     #document = service.documents().get(documentId=DOCUMENT_ID).execute()
 
 #docs_create('test doc')
+
 
 def abs_name(file_name):
     return ".".join(file_name.split(".")[:-1])
@@ -89,6 +103,8 @@ class MyHandler(FileSystemEventHandler):
         dest_end =event.dest_path.split('.')[-1]
         src_file_name = event.src_path[len(path) + 1:]
         dest_file_name = event.dest_path[len(path) + 1:]
+        dest_file_pure = abs_name(dest_file_name)
+        src_file_pure = abs_name(src_file_name)
         print(dest_end,dest_file_name)
         if src_end == 'html' and dest_end != 'html':
             time.sleep(1)
@@ -97,9 +113,14 @@ class MyHandler(FileSystemEventHandler):
             print('done')
 
         if src_end == 'html' and dest_end == 'html':
+            ID = dataop.search(src_file_pure)
+            dataop.add(dest_file_pure, ID)
+            dataop.delete(src_file_pure)
+            docs_rename(ID,dest_file_pure)
 
     def on_any_event(self, event):
         print(event.event_type, event.src_path)
+
 
 if __name__ == "__main__":
     event_handler = MyHandler()
